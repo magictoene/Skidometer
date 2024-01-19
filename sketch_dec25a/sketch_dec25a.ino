@@ -1,5 +1,15 @@
 #include <Arduino_MKRGPS.h>
 #include <SD.h>
+#include <U8g2lib.h>
+
+#ifdef U8X8_HAVE_HW_SPI
+#include <SPI.h>
+#endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
+
+U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); // if you use Hardware I2C port, full framebuffer, size = 1024 bytes
 
 File dataFile;
 
@@ -18,6 +28,10 @@ void setup() {
   }
 
   pinMode(LED_BUILTIN, OUTPUT);
+
+  // Start the Display
+  writeStartupScreen();
+
 
   if (!SD.begin()) {
     Serial.println("Failed to initialize SD card!");
@@ -42,8 +56,13 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);
   delay(500);
 
+  
   // Überprüfen, ob neue GPS-Daten verfügbar sind
   if (GPS.available()) {
+
+    writeConnectionSuccessfulScreen();
+    delay(1000);
+
     while (GPS.available()) {
       digitalWrite(LED_BUILTIN, HIGH);
 
@@ -73,20 +92,80 @@ void loop() {
 
       Serial.println();
 
+      // writeInfoScreen(altitude, speed, satellites);
+
       // Daten in die SD-Karte schreiben
       writeDataToFile(latitude, longitude, altitude, speed, satellites);
     }
 
     // Überprüfe, ob GPS-Signal verloren gegangen ist
-    if (!GPS.available()) {
+    /* if (!GPS.available()) {
       for (int i = 0; i < 5; ++i) {
-        digitalWrite(LED_BUILTIN, HIGH);
-        delay(500);
-        digitalWrite(LED_BUILTIN, LOW);
-        delay(500);
+        
       }
-    }
+    } */
   }
+  else {
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(500);
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(500);
+
+    writeLoadingScreen();
+  }
+}
+
+void writeStartupScreen(){
+  u8g2.clearBuffer();          // clear the internal memory
+  u8g2.setFont(u8g2_font_ncenB12_tr); // choose a suitable font
+  u8g2.drawStr(5,35,"SKIDOMETER");
+  u8g2.sendBuffer();          // transfer internal memory to the display
+  delay(2000);
+}
+
+void writeLoadingScreen(){      
+  u8g2.clearBuffer();          // clear the internal memory
+  u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+  u8g2.drawStr(25,10,"SKIDOMETER");
+  u8g2.drawStr(15,35,"No GPS Signal");
+  u8g2.drawStr(0,60, "Looking for Signal");
+  u8g2.sendBuffer(); 
+  delay(500);  
+  u8g2.drawStr(0,60, "Looking for Signal .");
+  u8g2.sendBuffer(); 
+  delay(500);
+  u8g2.drawStr(0,60, "Looking for Signal . .");
+  u8g2.sendBuffer(); 
+  delay(500);
+  u8g2.drawStr(0,60, "Looking for Signal . . .");
+  u8g2.sendBuffer();          // transfer internal memory to the display
+  delay(500);
+}
+
+void writeInfoScreen(float altitude, float speed, int satellites){
+  u8g2.clearBuffer();
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(0,0,"SKIDOMETER");
+  u8g2.drawStr(0,15,"Altitude:");
+  u8g2.setCursor(60,15);
+  u8g2.print(altitude);
+  u8g2.drawStr(0,30,"Speed:");
+  u8g2.setCursor(60,30);
+  u8g2.print(speed);
+  u8g2.drawStr(0,45,"Signal");
+  u8g2.setCursor(60,45);
+  u8g2.print(satellites);
+  u8g2.sendBuffer();
+  delay(500);
+}
+
+void writeConnectionSuccessfulScreen(){
+  u8g2.clearBuffer();          // clear the internal memory
+  u8g2.setFont(u8g2_font_ncenB12_tr); // choose a suitable font
+  u8g2.drawStr(5,35,"Connection established!");
+  u8g2.drawStr(0,60,"Have fun on the Slopes ^^");
+  u8g2.sendBuffer();          // transfer internal memory to the display
+  delay(2000);
 }
 
 void writeDataToFile(float latitude, float longitude, float altitude, float speed, int satellites) {
