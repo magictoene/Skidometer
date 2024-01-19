@@ -95,7 +95,8 @@ void loop() {
       // writeInfoScreen(altitude, speed, satellites);
 
       // Daten in die SD-Karte schreiben
-      writeDataToFile(latitude, longitude, altitude, speed, satellites);
+      // writeDataToFile(latitude, longitude, altitude, speed, satellites);
+      writeDataToFileGPX(latitude, longitude, altitude, speed, satellites);
     }
 
     // Überprüfe, ob GPS-Signal verloren gegangen ist
@@ -188,5 +189,43 @@ void writeDataToFile(float latitude, float longitude, float altitude, float spee
     dataFile.close();
   } else {
     Serial.println("Error opening gps_data.txt");
+  }
+}
+
+void writeDataToFileGPX(float latitude, float longitude, float altitude, float speed, int satellites) {
+  // Öffne die Datei im Anhänge-Modus
+  dataFile = SD.open("gps_data.gpx", FILE_WRITE);
+
+  if (dataFile) {
+    // Schreibe den Anfang der GPX-Datei
+    dataFile.println("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+    dataFile.println("<gpx version=\"1.1\" creator=\"Your GPS Logger\">");
+
+    // Schreibe den Trackpunkt mit den GPS-Daten
+    dataFile.print("<wpt lat=\"");
+    dataFile.print(latitude, 7);
+    dataFile.print("\" lon=\"");
+    dataFile.print(longitude, 7);
+    dataFile.println("\">");
+
+    dataFile.print("  <ele>");
+    dataFile.print(altitude);
+    dataFile.println("</ele>");
+
+    dataFile.print("  <speed>");
+    dataFile.print(speed);
+    dataFile.println("</speed>");
+
+    dataFile.print("  <satellites>");
+    dataFile.print(satellites);
+    dataFile.println("</satellites>");
+
+    dataFile.println("</wpt>");
+
+    // Schließe den Track und die GPX-Datei
+    dataFile.println("</gpx>");
+    dataFile.close();
+  } else {
+    Serial.println("Error opening gps_data.gpx");
   }
 }
