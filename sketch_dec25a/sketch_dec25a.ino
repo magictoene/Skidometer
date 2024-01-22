@@ -149,16 +149,16 @@ void writeLoadingScreen(){
 
 void writeInfoScreen(float altitude, float speed, int satellites){
   
-  char gps_signal[] = "";
+  char gps_signal[10];
 
   if (satellites <= 2){
-    gps_signal = "Weak";
+    strcpy(gps_signal, "Weak");
   } else if (satellites > 2 && satellites <= 4){
-    gps_signal = "Moderate";
+    strcpy(gps_signal, "Moderate");
   } else if (satellites > 4 && satellites <= 6){
-    gps_signal = "Strong";
+    strcpy(gps_signal, "Strong");
   } else if (satellites > 6 && satellites <= 8){
-    gps_signal = "Excellent";
+    strcpy(gps_signal, "Excellent");
   }
 
   u8g2.clearBuffer();
