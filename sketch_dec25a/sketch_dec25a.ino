@@ -14,6 +14,9 @@ U8G2_SSD1306_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); //
 File dataFile;
 
 void setup() {
+
+  u8g2.begin();
+
   Serial.begin(9600);
   // Entferne oder reduziere die Wartezeit auf die serielle Verbindung
   // Warte maximal 5 Sekunden
@@ -29,6 +32,7 @@ void setup() {
 
   pinMode(LED_BUILTIN, OUTPUT);
 
+  Serial.println("Initializing Display.");
   // Start the Display
   writeStartupScreen();
 
@@ -119,7 +123,7 @@ void loop() {
 void writeStartupScreen(){
   u8g2.clearBuffer();          // clear the internal memory
   u8g2.setFont(u8g2_font_ncenB12_tr); // choose a suitable font
-  u8g2.drawStr(5,35,"SKIDOMETER");
+  u8g2.drawStr(0,35,"SKIDOMETER");
   u8g2.sendBuffer();          // transfer internal memory to the display
   delay(2000);
 }
@@ -128,7 +132,7 @@ void writeLoadingScreen(){
   u8g2.clearBuffer();          // clear the internal memory
   u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
   u8g2.drawStr(25,10,"SKIDOMETER");
-  u8g2.drawStr(15,35,"No GPS Signal");
+  u8g2.drawStr(23,35,"No GPS Signal");
   u8g2.drawStr(0,60, "Looking for Signal");
   u8g2.sendBuffer(); 
   delay(500);  
@@ -144,18 +148,32 @@ void writeLoadingScreen(){
 }
 
 void writeInfoScreen(float altitude, float speed, int satellites){
+  
+  char gps_signal[] = "";
+
+  if (satellites <= 2){
+    gps_signal = "Weak";
+  } else if (satellites > 2 && satellites <= 4){
+    gps_signal = "Moderate";
+  } else if (satellites > 4 && satellites <= 6){
+    gps_signal = "Strong";
+  } else if (satellites > 6 && satellites <= 8){
+    gps_signal = "Excellent";
+  }
+
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.drawStr(0,0,"SKIDOMETER");
-  u8g2.drawStr(0,15,"Altitude:");
-  u8g2.setCursor(60,15);
+  u8g2.drawStr(0,10,"SKIDOMETER");
+  u8g2.drawStr(0,25,"Altitude:");
+  u8g2.setCursor(60,25);
   u8g2.print(altitude);
-  u8g2.drawStr(0,30,"Speed:");
-  u8g2.setCursor(60,30);
+  u8g2.drawStr(0,35,"Speed:");
+  u8g2.setCursor(60,35);
   u8g2.print(speed);
   u8g2.drawStr(0,45,"Signal");
-  u8g2.setCursor(60,45);
-  u8g2.print(satellites);
+  /* u8g2.setCursor(60,45);
+  u8g2.print(satellites); */
+  u8g2.drawStr(60,45,gps_signal);
   u8g2.sendBuffer();
   delay(500);
 }
