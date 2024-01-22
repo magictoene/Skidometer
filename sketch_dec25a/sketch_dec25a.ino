@@ -62,10 +62,9 @@ void loop() {
 
   
   // Überprüfen, ob neue GPS-Daten verfügbar sind
-  if (GPS.available()) {
+  if(GPS.available()) {
 
     writeConnectionSuccessfulScreen();
-    delay(1000);
 
     while (GPS.available()) {
       digitalWrite(LED_BUILTIN, HIGH);
@@ -96,7 +95,7 @@ void loop() {
 
       Serial.println();
 
-      // writeInfoScreen(altitude, speed, satellites);
+      writeInfoScreen(altitude, speed, satellites);
 
       // Daten in die SD-Karte schreiben
       // writeDataToFile(latitude, longitude, altitude, speed, satellites);
@@ -109,8 +108,7 @@ void loop() {
         
       }
     } */
-  }
-  else {
+  } else {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(500);
     digitalWrite(LED_BUILTIN, LOW);
