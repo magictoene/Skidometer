@@ -60,7 +60,6 @@ void loop() {
   digitalWrite(LED_BUILTIN, LOW);
   delay(500);
 
-  
   // Überprüfen, ob neue GPS-Daten verfügbar sind
   if(GPS.available()) {
 
@@ -101,14 +100,8 @@ void loop() {
       // writeDataToFile(latitude, longitude, altitude, speed, satellites);
       writeDataToFileGPX(latitude, longitude, altitude, speed, satellites);
     }
-
-    // Überprüfe, ob GPS-Signal verloren gegangen ist
-    /* if (!GPS.available()) {
-      for (int i = 0; i < 5; ++i) {
-        
-      }
-    } */
-  } else {
+  } 
+  else {
     digitalWrite(LED_BUILTIN, HIGH);
     delay(500);
     digitalWrite(LED_BUILTIN, LOW);
@@ -116,6 +109,23 @@ void loop() {
 
     writeLoadingScreen();
   }
+
+  simulateGPSConnection();
+
+}
+
+void simulateGPSConnection(){
+
+  const float altitude = 2274.40;
+  const float speed = 73.30;
+  const int satellites = 8;
+
+  writeConnectionSuccessfulScreen();
+
+  for(int i = 0; i < 10; i++){
+    writeInfoScreen(altitude, speed, satellites);
+  }
+
 }
 
 void writeStartupScreen(){
@@ -126,11 +136,11 @@ void writeStartupScreen(){
   delay(2000);
 }
 
-void writeLoadingScreen(){      
+void writeLoadingScreen(){
   u8g2.clearBuffer();          // clear the internal memory
   u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
   u8g2.drawStr(25,10,"SKIDOMETER");
-  u8g2.drawStr(23,35,"No GPS Signal");
+  u8g2.drawStr(25,35,"No GPS Signal");
   u8g2.drawStr(0,60, "Looking for Signal");
   u8g2.sendBuffer(); 
   delay(500);  
@@ -150,42 +160,49 @@ void writeInfoScreen(float altitude, float speed, int satellites){
   char gps_signal[10];
 
   if (satellites <= 2){
-    strcpy(gps_signal, "Weak");
+    strcpy(gps_signal, "|");
   } else if (satellites > 2 && satellites <= 4){
-    strcpy(gps_signal, "Moderate");
+    strcpy(gps_signal, "||");
   } else if (satellites > 4 && satellites <= 6){
-    strcpy(gps_signal, "Strong");
+    strcpy(gps_signal, "|||");
   } else if (satellites > 6 && satellites <= 8){
-    strcpy(gps_signal, "Excellent");
+    strcpy(gps_signal, "||||");
   }
 
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_ncenB08_tr);
   u8g2.drawStr(0,10,"SKIDOMETER");
-  u8g2.drawStr(0,25,"Altitude:");
-  u8g2.setCursor(60,25);
+  u8g2.drawStr(0,30,"Height:");
+  u8g2.setFont(u8g2_font_ncenB12_tr);
+  u8g2.setCursor(45,30);
   u8g2.print(altitude);
-  u8g2.drawStr(0,35,"Speed:");
-  u8g2.setCursor(60,35);
-  u8g2.print(speed);
-  u8g2.drawStr(0,45,"Signal");
-  /* u8g2.setCursor(60,45);
-  u8g2.print(satellites); */
-  u8g2.drawStr(60,45,gps_signal);
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(115,30,"m");
+
+  u8g2.drawStr(0,45,"Speed:");
+  u8g2.setFont(u8g2_font_ncenB12_tr);
+  u8g2.setCursor(45,45);
+  u8g2.print(speed);  
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(100,45,"km/h");
+  
+  u8g2.drawStr(0,60,"Signal:");
+  u8g2.setFont(u8g2_font_ncenB12_tr);
+  u8g2.drawStr(45,60,gps_signal);
   u8g2.sendBuffer();
   delay(500);
 }
 
 void writeConnectionSuccessfulScreen(){
   u8g2.clearBuffer();          // clear the internal memory
-  u8g2.setFont(u8g2_font_ncenB12_tr); // choose a suitable font
-  u8g2.drawStr(5,35,"Connection established!");
-  u8g2.drawStr(0,60,"Have fun on the Slopes ^^");
+  u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+  u8g2.drawStr(0,25,"Connection established!");
+  u8g2.drawStr(35,45,"Have fun ^^");
   u8g2.sendBuffer();          // transfer internal memory to the display
-  delay(2000);
+  delay(3000);
 }
 
-void writeDataToFile(float latitude, float longitude, float altitude, float speed, int satellites) {
+/* void writeDataToFile(float latitude, float longitude, float altitude, float speed, int satellites) {
   // Öffne die Datei im Anhänge-Modus
   dataFile = SD.open("gps_data.txt", FILE_WRITE);
 
@@ -206,7 +223,7 @@ void writeDataToFile(float latitude, float longitude, float altitude, float spee
   } else {
     Serial.println("Error opening gps_data.txt");
   }
-}
+} */
 
 void writeDataToFileGPX(float latitude, float longitude, float altitude, float speed, int satellites) {
   // Öffne die Datei im Anhänge-Modus
